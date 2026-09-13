@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#FFFDF6">
+  <meta name="description" content="炼打卡 - 周一三五分化训练 + 周六拉伸的纯本地健身打卡网页，支持训练视频记录、AI 动作审查、渐进超负荷、减脂餐推荐">
+  <title>炼打卡 · 健身打卡</title>
+  <link rel="icon" href="images/icon-192.png">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- 顶栏 -->
+    <header id="topbar">
+      <div class="icon-btn" onclick="App.openDrawer()" title="功能目录">☰</div>
+      <div class="title" id="top-title">🔥 炼打卡</div>
+      <div class="icon-btn primary" onclick="App.go('train-run')" title="快速开始今日训练">⚡</div>
+    </header>
+
+    <!-- 主视图 -->
+    <main id="view"></main>
+
+    <!-- 底部 TabBar -->
+    <nav id="tabbar"></nav>
+
+    <!-- 左上角抽屉菜单 -->
+    <div id="drawer-mask" onclick="App.closeDrawer()"></div>
+    <aside id="drawer">
+      <div class="drawer-hero">
+        <img src="images/cover.jpg" alt="封面">
+        <div>
+          <div class="nm" id="drawer-name">健身新人</div>
+          <div class="sub" id="drawer-streak">连续打卡 0 天 🔥</div>
+        </div>
+      </div>
+      <div class="drawer-item" onclick="App.go('calendar');App.closeDrawer()"><span class="di-ic">📅</span>打卡日历</div>
+      <div class="drawer-item" onclick="App.go('diary');App.closeDrawer()"><span class="di-ic">📖</span>训练日记</div>
+      <div class="drawer-item" onclick="App.go('media');App.closeDrawer()"><span class="di-ic">🎬</span>视频管理</div>
+      <div class="drawer-item" onclick="App.go('train');App.closeDrawer()"><span class="di-ic">🏋️</span>本周计划</div>
+      <div class="drawer-item" onclick="App.go('diet');App.closeDrawer()"><span class="di-ic">🥗</span>减脂饮食</div>
+      <div class="drawer-item" onclick="App.go('settings');App.closeDrawer()"><span class="di-ic">⚙️</span>设置</div>
+      <div class="drawer-item" onclick="App.go('about');App.closeDrawer()"><span class="di-ic">ℹ️</span>关于</div>
+      <div class="muted small" style="text-align:center;margin-top:20px;line-height:1.8">炼打卡 · 网页版<br>数据仅保存在本机</div>
+    </aside>
+
+    <!-- 计时器悬浮条（训练页用） -->
+    <div id="timer-float">
+      <div>
+        <div class="t-left">01:30</div>
+        <div class="t-label">组间休息</div>
+      </div>
+      <div class="t-opts">
+        <button data-sec="60">60s</button>
+        <button data-sec="90" class="on">90s</button>
+        <button data-sec="120">120s</button>
+      </div>
+      <button class="t-stop">跳过</button>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast"></div>
+
+    <!-- Modal -->
+    <div id="modal-mask">
+      <div id="modal">
+        <div class="m-title"></div>
+        <div class="m-body"></div>
+        <div class="m-foot"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 依赖顺序：数据 → 工具 → 存储 → AI → 框架 → 视图 -->
+  <script src="js/data.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/vdb.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/views/home.js"></script>
+  <script src="js/views/train.js"></script>
+  <script src="js/views/review.js"></script>
+  <script src="js/views/media.js"></script>
+  <script src="js/views/diet.js"></script>
+  <script src="js/views/mine.js"></script>
+  <script>
+    // 渲染底部 Tab（script 在 body 末尾，DOM 已就绪，同步执行保证先于首次路由）
+    document.getElementById('tabbar').innerHTML = App.TABS.map(t =>
+      '<a class="tab" data-path="' + t.path + '" href="#/' + t.path + '">' +
+      '<span class="ic">' + t.icon + '</span>' + t.name + '</a>'
+    ).join('')
+
+    // 每次路由后刷新抽屉里的昵称与连续天数
+    const _route = App.route.bind(App)
+    App.route = function () { _route(); refreshDrawer() }
+    function refreshDrawer() {
+      const p = getProfile()
+      document.getElementById('drawer-name').textContent = p.nickname || '健身新人'
+      document.getElementById('drawer-streak').textContent = '连续打卡 ' + getStreak() + ' 天 🔥'
+    }
+    refreshDrawer()
+  </script>
+</body>
+</html>
